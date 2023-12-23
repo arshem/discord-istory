@@ -36,10 +36,6 @@ Discord iStory Bot is a chatbot implemented in Node.js using the Discord.js libr
 4. Set up a MySQL database and update the `.env` file with the database connection details.
 
 ```
---
--- Table structure for table `messages`
---
-
 CREATE TABLE `messages` (
   `messageId` varchar(254) COLLATE utf8mb4_general_ci NOT NULL,
   `summaryId` bigint DEFAULT NULL,
@@ -50,18 +46,29 @@ CREATE TABLE `messages` (
   `deleted` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Indexes for dumped tables
---
+REATE TABLE `summary` (
+  `summaryId` bigint NOT NULL,
+  `userId` bigint NOT NULL,
+  `summary` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `created_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_on` timestamp NOT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Indexes for table `messages`
---
 ALTER TABLE `messages`
   ADD PRIMARY KEY (`messageId`),
   ADD KEY `created_on` (`created_on`),
   ADD KEY `userId` (`userId`),
   ADD KEY `reply_to` (`reply_to`);
+
+
+ALTER TABLE `summary`
+  ADD PRIMARY KEY (`summaryId`),
+  ADD UNIQUE KEY `userId` (`userId`),
+  ADD KEY `created_on` (`created_on`);
+ALTER TABLE `summary` ADD FULLTEXT KEY `summary` (`summary`);
+
+ALTER TABLE `summary`
+  MODIFY `summaryId` bigint NOT NULL AUTO_INCREMENT;
 COMMIT;
 ```
 
