@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 const OpenAI = require('openai');
 const mysql = require('mysql2');
 const fs = require('fs');
-dotenv.config({path: '/home/arshem-barkeep/htdocs/barkeep.arshem.net/Barkeep/.env'});
+dotenv.config({path: '.env'});
 
 
 // Create a new client instance
