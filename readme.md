@@ -35,6 +35,36 @@ Discord iStory Bot is a chatbot implemented in Node.js using the Discord.js libr
 
 4. Set up a MySQL database and update the `.env` file with the database connection details.
 
+```
+--
+-- Table structure for table `messages`
+--
+
+CREATE TABLE `messages` (
+  `messageId` varchar(254) COLLATE utf8mb4_general_ci NOT NULL,
+  `summaryId` bigint DEFAULT NULL,
+  `content` text COLLATE utf8mb4_general_ci NOT NULL,
+  `userId` varchar(254) COLLATE utf8mb4_general_ci NOT NULL,
+  `reply_to` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted` int NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `messages`
+--
+ALTER TABLE `messages`
+  ADD PRIMARY KEY (`messageId`),
+  ADD KEY `created_on` (`created_on`),
+  ADD KEY `userId` (`userId`),
+  ADD KEY `reply_to` (`reply_to`);
+COMMIT;
+```
+
 ## Usage
 
 Run the bot using the following command:
