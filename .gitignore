@@ -1,0 +1,5 @@
+Botboy
+.env
+node_modules/
+Barkeep/eslintrc.json
+Barkeep/package-lock.json
