@@ -46,7 +46,7 @@ CREATE TABLE `messages` (
   `deleted` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-REATE TABLE `summary` (
+CREATE TABLE `summary` (
   `summaryId` bigint NOT NULL,
   `userId` bigint NOT NULL,
   `summary` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
@@ -69,7 +69,6 @@ ALTER TABLE `summary` ADD FULLTEXT KEY `summary` (`summary`);
 
 ALTER TABLE `summary`
   MODIFY `summaryId` bigint NOT NULL AUTO_INCREMENT;
-COMMIT;
 ```
 
 ## Usage
