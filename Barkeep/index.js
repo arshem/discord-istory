@@ -34,6 +34,9 @@ client.on('messageCreate', async (message) => {
 
         // check to see if the message.author.displayName is in the thread variable. This only works because we're using the displayName as part of the thread name
         thread.includes(message.author.displayName)
+        // need to come up with a better way to confirm other commands aren't being used
+        && message.content.toLowerCase() !== "!summary"
+        && !message.content.toLowerCase().startsWith(process.env.DISCORD_PREFIX)
     ) {
         // A reply to a bot message 
         try {
