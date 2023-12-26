@@ -37,7 +37,7 @@ client.on('messageCreate', async (message) => {
         // need to come up with a better way to confirm other commands aren't being used
         && message.content.toLowerCase() !== "!summary"
         && !message.content.toLowerCase().startsWith(process.env.DISCORD_PREFIX)
-        && !message.content.toLowerCase() !== "!github"
+        && message.content.toLowerCase() !== "!github"
     ) {
         // A reply to a bot message 
         try {
