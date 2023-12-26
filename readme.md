@@ -1,7 +1,7 @@
 # Discord iStory Bot
 
 ## Introduction
-
+<img src="https://repository-images.githubusercontent.com/735084119/61349758-9c88-4065-8634-4f7b469a1331" alt="Discord iStory">
 Discord iStory Bot is a chatbot implemented in Node.js using the Discord.js library. The bot leverages OpenAI Compatible APIs for natural language processing and MySQL for data storage. The primary purpose of this bot is to generate stories that users can interact with. This is specifically meant for solo play, though with a few adjustments, it could be used as a group play. 
 
 ## Features
