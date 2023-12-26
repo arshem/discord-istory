@@ -37,6 +37,7 @@ client.on('messageCreate', async (message) => {
         // need to come up with a better way to confirm other commands aren't being used
         && message.content.toLowerCase() !== "!summary"
         && !message.content.toLowerCase().startsWith(process.env.DISCORD_PREFIX)
+        && !message.content.toLowerCase() !== "!github"
     ) {
         // A reply to a bot message 
         try {
@@ -156,6 +157,13 @@ client.on('messageCreate', async (message) => {
             }
         } catch(error) {
             console.error(error);
+        }
+    } else if(message.content.toLowerCase().startsWith("!github")) {
+        try {
+            message.channel.send("Get your own bot here: https://github.com/arshem/discord-istory");
+        } catch(e)
+        {
+            console.error(e);
         }
     }
   });
