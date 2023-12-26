@@ -136,7 +136,7 @@ client.on('messageCreate', async (message) => {
 
             // Send each chunk as a separate message
             for (const chunk of messageChunks) {
-                await thread.send(chunk).attachments(sent => {
+                await thread.send(chunk)(sent => {
                     insertReply(sent.id, sent.author.id, message.author.id, chunk ) 
                 });
             }
@@ -273,7 +273,7 @@ client.login(process.env.DISCORD_TOKEN);
                 let message = "";
                 if (summary !== null && summary !== "") {    
                     //console.log("Summary found");    
-                    message = "Here is the current summary: \n\n" + summary + "\n\n Here are the new messages: "+messages+" Only output the new summary. Nothing else.";
+                    message = "Here is the current summary: \n\n" + summary + "\n\n Here are the new messages: "+messages+" Combine them into one summary. Remember it's important to keep inventory, important names, events, achievements, etc, as this is a story you're helping build.";
                 } else if (row.length === 0) {
                     //console.log("No Summary Found");
                     messages = fetchHistoryByConv(userId);
