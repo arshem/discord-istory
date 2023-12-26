@@ -3,3 +3,6 @@ Botboy
 node_modules/
 Barkeep/eslintrc.json
 Barkeep/package-lock.json
+ecosystem.config.js
+index-pm2.json
+Barkeep-pm2.json

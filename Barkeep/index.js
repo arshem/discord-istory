@@ -1,10 +1,10 @@
 // Require the necessary discord.js classes
-const { Client, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Events, GatewayIntentBits, ThreadManager } = require('discord.js');
 const dotenv = require('dotenv');
 const OpenAI = require('openai');
 const mysql = require('mysql2');
-const fs = require('fs');
-dotenv.config({path: '.env'});
+
+dotenv.config({path: './Barkeep/.env'});
 
 
 // Create a new client instance
@@ -12,24 +12,32 @@ const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent,
 	],
 });
-
-const MESSAGE_CHAR_LIMIT = 1500;
+//const thread = new ThreadsAPI;
 
 client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
+
 client.on('messageCreate', async (message) => {
+
+    const threadID = message.channel.id;
+    // threadID = the channel ID, not necessarily just a thread message. Need to be careful here
 
     // Ignore messages from bots
     if (message.author.bot) return;
+    const thread = message.channel.name
     if (
-        message.mentions.repliedUser &&
-        message.mentions.repliedUser.username &&
-        message.mentions.repliedUser.username.toLowerCase() === process.env.DISCORD_BOTNAME.toLowerCase()
+
+        // check to see if the message.author.displayName is in the thread variable. This only works because we're using the displayName as part of the thread name
+        thread.includes(message.author.displayName)
+        // need to come up with a better way to confirm other commands aren't being used
+        && message.content.toLowerCase() !== "!summary"
+        && !message.content.toLowerCase().startsWith(process.env.DISCORD_PREFIX)
+        && message.content.toLowerCase() !== "!github"
     ) {
         // A reply to a bot message 
         try {
@@ -38,6 +46,7 @@ client.on('messageCreate', async (message) => {
                 baseURL: process.env.AI_URL
             });
 
+
             let aiMessage = [
             {
                 'role': 'system',
@@ -45,7 +54,7 @@ client.on('messageCreate', async (message) => {
             }]
 
             let summary = await fetchHistoryByConv(message.author.id);
-            console.log("FetchHistory Summary: ", JSON.stringify(summary))
+            //("FetchHistory Summary: ", JSON.stringify(summary))
             aiMessage.push({
                 'role' : 'assistant',
                 'content' : 'Summary so far: '+summary.newSummary
@@ -61,7 +70,7 @@ client.on('messageCreate', async (message) => {
                 'content': message.content
             })
 
-            console.log("AI Message Array: ", aiMessage);
+            //("AI Message Array: ", aiMessage);
             insertMessage(message.id, message.author.id, message.content) 
 
             //console.log("Reach to AI");
@@ -74,10 +83,15 @@ client.on('messageCreate', async (message) => {
             });
             //console.log("AI responded");
             let out = reply.choices[0]?.message?.content
-            
-            message.reply(out).then(sent => {
-                insertReply(sent.id, sent.author.id, message.author.id, out) 
-            });
+         
+            const messageChunks = out.match(/[\s\S]{1,2000}/g);
+
+            // Send each chunk as a separate message
+            for (const chunk of messageChunks) {
+                await message.reply(chunk).then(sent => {
+                    insertReply(sent.id, sent.author.id, message.author.id, chunk ) 
+                });
+            }
             
         } catch (error) {
             console.error("Error " + error.message);
@@ -111,11 +125,24 @@ client.on('messageCreate', async (message) => {
                 max_tokens: process.env.AI_TOKENS
             });
 
-            message.reply(reply.choices[0]?.message?.content).then(sent => {
-                insertReply(sent.id, sent.author.id, message.author.id, reply.choices[0]?.message?.content ) 
+            const thread = await message.startThread({
+                name: message.author.displayName+" Adventure",
+                reason: "Solo Adventure"
             });
+            await thread.members.add(message.author.id);
+            await thread.members.add(process.env.DISCORD_BOT_ID);
+
+            const messageChunks = reply.choices[0]?.message?.content.match(/[\s\S]{1,2000}/g);
+
+            // Send each chunk as a separate message
+            for (const chunk of messageChunks) {
+                await thread.send(chunk).attachments(sent => {
+                    insertReply(sent.id, sent.author.id, message.author.id, chunk ) 
+                });
+            }
+            
         } catch(error) {
-            console.log("Error "+error.message);
+            console.error("Error "+error.message);
         }
 
     } else if (message.content.toLowerCase().startsWith("!summary")) {
@@ -130,6 +157,13 @@ client.on('messageCreate', async (message) => {
             }
         } catch(error) {
             console.error(error);
+        }
+    } else if(message.content.toLowerCase().startsWith("!github")) {
+        try {
+            message.channel.send("Get your own bot here: https://github.com/arshem/discord-istory");
+        } catch(e)
+        {
+            console.error(e);
         }
     }
   });
@@ -205,16 +239,25 @@ client.login(process.env.DISCORD_TOKEN);
     function purgeUser(userId)
     {
         //console.log('purge');
-        pool
-        .query('UPDATE messages SET deleted=1 WHERE userId = ? OR reply_to=?', [userId, userId]);
+        try {
+            pool
+            .query('UPDATE messages SET deleted=1 WHERE userId = ? OR reply_to=?', [userId, userId]);
+        } catch(e) {
+            console.error(e);
+        }
+        try{
+            pool
+            .query("INSERT INTO summary (userId, summary) VALUES (?, ?)", [userId, "N/A"])
+        } catch(e) {
+            console.error(e);
+        }
+        try{
+            pool.query("UPDATE summary SET summary = ? WHERE userId = ?", ["N/A",userId]);
+            return true;
+        } catch(e) {
+            console.error(e);
+        }
 
-        pool
-        .query('DELETE FROM summary WHERE userId = ?', [userId]);
-
-        pool
-        .query("INSERT INTO summary (userId, summary) VALUES (?, ?)", [userId, "N/A"])
-
-        return true;
     }
 
     async function doSummarize(messages, userId)
@@ -246,7 +289,7 @@ client.login(process.env.DISCORD_TOKEN);
                 let aiMessage = [
                     {
                         'role': 'system',
-                        'content': "You summarize chat transcripts into a story. Be sure to include all important information, like names, places, achievements, etc."
+                        'content': process.env.AI_SUMMARY_PREFIX
                     },
                     {
                         'role': 'user',
@@ -282,11 +325,17 @@ client.login(process.env.DISCORD_TOKEN);
 
     async function fetchSummary(userId) {
         //console.log("fetchsummary");
-        let summary = '';
-        await pool.promise().query("SELECT summary FROM summary WHERE userId=?", [userId])
-        .then(row => {
-            summary = JSON.parse(JSON.stringify(row));
+        try {
+            let summary = '';
+            await pool.promise().query("SELECT summary FROM summary WHERE userId=?", [userId])
+            .then(row => {
+                summary = JSON.parse(JSON.stringify(row));
             //console.log("Rowwwwwww",summary[0][0].summary);
-        });
-        return summary[0][0].summary;
+           });
+            return summary[0][0].summary;
+        } catch(e) {
+            console.error(e);
+            pool.query("INSERT INTO summary (userId, summary) VALUES (?, ?)", [userId, "N/A"]);
+            fetchSummary(userId);
+        }
     }

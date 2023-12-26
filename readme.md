@@ -18,22 +18,64 @@ Discord iStory Bot is a chatbot implemented in Node.js using the Discord.js libr
 3. Create a `.env` file in the project root and configure the following variables:
 
    ```env
-   DISCORD_TOKEN=your_discord_bot_token
-   DISCORD_PREFIX=your_bot_command_prefix
-   DISCORD_BOTNAME=your_bot_name
-   DISCORD_BOT_ID=your_bot_id
+   DISCORD_TOKEN="your_discord_bot_token"
+   DISCORD_PREFIX="your_bot_command_prefix"
+   DISCORD_BOTNAME="your_bot_name"
+   DISCORD_BOT_ID="your_bot_id"
 
-   AI_API_KEY=your_openai_api_key
-   AI_MODEL=your_openai_model
-   AI_URL=your_openai_base_url
-   AI_PERSONALITY=your_openai_personality
-   AI_TEMP=your_openai_temperature
-   AI_TOKENS=your_openai_max_tokens
+   AI_API_KEY="your_openai_api_key"
+   AI_MODEL="your_openai_model"
+   AI_URL="your_openai_base_url"
+   AI_PERSONALITY="your_openai_personality"
+   AI_TEMP="your_openai_temperature"
+   AI_TOKENS="your_openai_max_tokens"
+   AI_SUMMARY_PREFIX="your_prefix_for_summaries"
+
+   DB_HOST="your_database_host"
+   DB_USER="your_database_username"
+   DB_NAME="your_database_name"
+   DB_PASS="your_database_password"  
    ```
 
    Replace the placeholders with your actual values.
 
 4. Set up a MySQL database and update the `.env` file with the database connection details.
+
+```
+CREATE TABLE `messages` (
+  `messageId` varchar(254) COLLATE utf8mb4_general_ci NOT NULL,
+  `summaryId` bigint DEFAULT NULL,
+  `content` text COLLATE utf8mb4_general_ci NOT NULL,
+  `userId` varchar(254) COLLATE utf8mb4_general_ci NOT NULL,
+  `reply_to` varchar(254) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted` int NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `summary` (
+  `summaryId` bigint NOT NULL,
+  `userId` bigint NOT NULL,
+  `summary` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `created_on` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_on` timestamp NOT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `messages`
+  ADD PRIMARY KEY (`messageId`),
+  ADD KEY `created_on` (`created_on`),
+  ADD KEY `userId` (`userId`),
+  ADD KEY `reply_to` (`reply_to`);
+
+
+ALTER TABLE `summary`
+  ADD PRIMARY KEY (`summaryId`),
+  ADD UNIQUE KEY `userId` (`userId`),
+  ADD KEY `created_on` (`created_on`);
+ALTER TABLE `summary` ADD FULLTEXT KEY `summary` (`summary`);
+
+ALTER TABLE `summary`
+  MODIFY `summaryId` bigint NOT NULL AUTO_INCREMENT;
+```
 
 ## Usage
 
@@ -47,9 +89,8 @@ The bot will then connect to Discord and respond to messages based on the implem
 
 ## Commands
 
-- **Barkeep**: Start a conversation with the bot by mentioning its name.
+- **Barkeep**: Start a conversation with the bot by mentioning its name, it will create a thread for you to continue your adventure.
 - **!summary**: Fetch a summary of your chat history. This is to allow you to see your own summary progress, and see what the bot sees as your story so far.
-- To continue conversations, you currently need to reply to the bot using Discord's "reply" function
 
 ## Database Schema
 
