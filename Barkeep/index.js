@@ -1,9 +1,9 @@
 // Require the necessary discord.js classes
-const { Client, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Events, GatewayIntentBits, ThreadManager } = require('discord.js');
 const dotenv = require('dotenv');
 const OpenAI = require('openai');
 const mysql = require('mysql2');
-const fs = require('fs');
+
 dotenv.config({path: './Barkeep/.env'});
 
 
@@ -12,26 +12,28 @@ const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent,
 	],
 });
-
-const MESSAGE_CHAR_LIMIT = 1500;
+//const thread = new ThreadsAPI;
 
 client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
+
 client.on('messageCreate', async (message) => {
+
+    const threadID = message.channel.id;
+    // threadID = the channel ID, not necessarily just a thread message. Need to be careful here
 
     // Ignore messages from bots
     if (message.author.bot) return;
+    const thread = message.channel.name
     if (
-        (
-            message.mentions.repliedUser &&
-            message.mentions.repliedUser.username &&
-            message.mentions.repliedUser.username.toLowerCase() === process.env.DISCORD_BOTNAME.toLowerCase()
-        ) 
+
+        // check to see if the message.author.displayName is in the thread variable. This only works because we're using the displayName as part of the thread name
+        thread.includes(message.author.displayName)
     ) {
         // A reply to a bot message 
         try {
@@ -39,6 +41,7 @@ client.on('messageCreate', async (message) => {
                 apiKey: process.env.AI_API_KEY,
                 baseURL: process.env.AI_URL
             });
+
 
             let aiMessage = [
             {
@@ -86,11 +89,6 @@ client.on('messageCreate', async (message) => {
                 });
             }
             
-            /*
-                message.reply(out).then(sent => {
-                    insertReply(sent.id, sent.author.id, message.author.id, out) 
-                });
-            */
         } catch (error) {
             console.error("Error " + error.message);
         }
@@ -138,11 +136,6 @@ client.on('messageCreate', async (message) => {
                     insertReply(sent.id, sent.author.id, message.author.id, chunk ) 
                 });
             }
-            
-            /*
-            await thread.send(reply.choices[0]?.message?.content).then(sent => {
-                insertReply(sent.id, sent.author.id, message.author.id, reply.choices[0]?.message?.content ) 
-            });*/
             
         } catch(error) {
             console.error("Error "+error.message);
@@ -285,7 +278,7 @@ client.login(process.env.DISCORD_TOKEN);
                 let aiMessage = [
                     {
                         'role': 'system',
-                        'content': "You summarize chat transcripts into a story. Be sure to include all important information, like names, places, achievements, etc."
+                        'content': process.env.AI_SUMMARY_PREFIX
                     },
                     {
                         'role': 'user',

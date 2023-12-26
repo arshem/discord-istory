@@ -18,17 +18,23 @@ Discord iStory Bot is a chatbot implemented in Node.js using the Discord.js libr
 3. Create a `.env` file in the project root and configure the following variables:
 
    ```env
-   DISCORD_TOKEN=your_discord_bot_token
-   DISCORD_PREFIX=your_bot_command_prefix
-   DISCORD_BOTNAME=your_bot_name
-   DISCORD_BOT_ID=your_bot_id
+   DISCORD_TOKEN="your_discord_bot_token"
+   DISCORD_PREFIX="your_bot_command_prefix"
+   DISCORD_BOTNAME="your_bot_name"
+   DISCORD_BOT_ID="your_bot_id"
 
-   AI_API_KEY=your_openai_api_key
-   AI_MODEL=your_openai_model
-   AI_URL=your_openai_base_url
-   AI_PERSONALITY=your_openai_personality
-   AI_TEMP=your_openai_temperature
-   AI_TOKENS=your_openai_max_tokens
+   AI_API_KEY="your_openai_api_key"
+   AI_MODEL="your_openai_model"
+   AI_URL="your_openai_base_url"
+   AI_PERSONALITY="your_openai_personality"
+   AI_TEMP="your_openai_temperature"
+   AI_TOKENS="your_openai_max_tokens"
+   AI_SUMMARY_PREFIX="your_prefix_for_summaries"
+
+   DB_HOST="your_database_host"
+   DB_USER="your_database_username"
+   DB_NAME="your_database_name"
+   DB_PASS="your_database_password"  
    ```
 
    Replace the placeholders with your actual values.
@@ -83,9 +89,8 @@ The bot will then connect to Discord and respond to messages based on the implem
 
 ## Commands
 
-- **Barkeep**: Start a conversation with the bot by mentioning its name.
+- **Barkeep**: Start a conversation with the bot by mentioning its name, it will create a thread for you to continue your adventure.
 - **!summary**: Fetch a summary of your chat history. This is to allow you to see your own summary progress, and see what the bot sees as your story so far.
-- To continue conversations, you currently need to reply to the bot using Discord's "reply" function
 
 ## Database Schema
 
